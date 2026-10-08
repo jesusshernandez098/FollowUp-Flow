@@ -449,6 +449,78 @@
       margin-top: 1px;
     }
 
+    .stakeholder-contact {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    .contact-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.8rem;
+      color: var(--slate-600);
+      background: var(--slate-100);
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--slate-200);
+      max-width: 100%;
+      word-break: break-all;
+    }
+
+    .contact-link {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .contact-link:hover {
+      text-decoration: underline;
+    }
+
+    .btn-copy-contact {
+      background: white;
+      border: 1px solid var(--slate-300);
+      color: var(--slate-600);
+      border-radius: var(--radius-sm);
+      padding: 2px 7px;
+      font-size: 0.74rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+
+    .btn-copy-contact:hover {
+      background: var(--slate-100);
+      color: var(--slate-800);
+      border-color: var(--slate-400);
+    }
+
+    .email-action-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--slate-700);
+      background: white;
+      border: 1px solid var(--slate-300);
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .email-action-link:hover {
+      background: var(--slate-50);
+      border-color: var(--slate-400);
+      color: var(--slate-900);
+    }
+
     .badges-group {
       display: flex;
       flex-wrap: wrap;
@@ -753,6 +825,13 @@
             <div id="errorCompany" class="error-feedback">Please enter the company or organization.</div>
           </div>
 
+          <!-- Contact Info / Email -->
+          <div class="form-group">
+            <label for="contactInfo">Contact Info / Email <span style="font-weight: 400; color: var(--slate-500);">(Optional)</span></label>
+            <input type="text" id="contactInfo" placeholder="e.g. jane@bluepeak.com or (555) 234-5678">
+            <p class="helper-text">Store email or direct contact info so you don't have to look it up later.</p>
+          </div>
+
           <!-- Pitch Date -->
           <div class="form-group">
             <label for="pitchDate">Pitch Date <span class="req">*</span></label>
@@ -866,6 +945,7 @@
       const formAlert = document.getElementById('formAlert');
       const stakeholderNameInput = document.getElementById('stakeholderName');
       const companyNameInput = document.getElementById('companyName');
+      const contactInfoInput = document.getElementById('contactInfo');
       const pitchDateInput = document.getElementById('pitchDate');
       const followupOffsetSelect = document.getElementById('followupOffset');
       const customDaysWrapper = document.getElementById('customDaysWrapper');
@@ -943,6 +1023,11 @@
           day: 'numeric',
           year: 'numeric'
         });
+      }
+
+      function isEmail(str) {
+        if (!str) return false;
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str.trim());
       }
 
       // Compute status for an ISO date vs today
@@ -1128,8 +1213,9 @@ Best regards,`;
             const q = searchQuery.toLowerCase().trim();
             const nameMatch = item.stakeholderName.toLowerCase().includes(q);
             const companyMatch = item.company.toLowerCase().includes(q);
+            const contactMatch = (item.contactInfo || '').toLowerCase().includes(q);
             const notesMatch = (item.notes || '').toLowerCase().includes(q);
-            return nameMatch || companyMatch || notesMatch;
+            return nameMatch || companyMatch || contactMatch || notesMatch;
           }
 
           return true;
@@ -1194,6 +1280,22 @@ Best regards,`;
                   <div class="stakeholder-company">
                     ${escapeHTML(record.company)}
                   </div>
+                  ${record.contactInfo ? `
+                    <div class="stakeholder-contact">
+                      <span class="contact-badge">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                          <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        ${isEmail(record.contactInfo) 
+                          ? `<a href="mailto:${escapeHTML(record.contactInfo)}" class="contact-link" title="Send email via default app">${escapeHTML(record.contactInfo)}</a>` 
+                          : escapeHTML(record.contactInfo)}
+                      </span>
+                      <button type="button" class="btn-copy-contact copy-contact-btn" data-text="${encodeURIComponent(record.contactInfo)}" title="Copy contact info">
+                        Copy
+                      </button>
+                    </div>
+                  ` : ''}
                 </div>
                 <div class="badges-group">
                   <span class="status-badge ${status.class}">${status.label}</span>
@@ -1255,6 +1357,15 @@ Best regards,`;
                     </svg>
                     Copy Follow-Up Message
                   </button>
+                  ${(record.contactInfo && isEmail(record.contactInfo)) ? `
+                    <a href="mailto:${encodeURIComponent(record.contactInfo)}?subject=${encodeURIComponent('Following up on our conversation - ' + record.company)}&body=${encodeURIComponent(followupMsgText)}" class="email-action-link" title="Open email client with message pre-filled">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                      </svg>
+                      Draft Email
+                    </a>
+                  ` : ''}
                 </div>
 
                 <!-- Meeting reminder view (if exists) -->
@@ -1268,6 +1379,15 @@ Best regards,`;
                       </svg>
                       Copy Meeting Reminder
                     </button>
+                    ${(record.contactInfo && isEmail(record.contactInfo)) ? `
+                      <a href="mailto:${encodeURIComponent(record.contactInfo)}?subject=${encodeURIComponent('Reminder: Upcoming meeting - ' + record.company)}&body=${encodeURIComponent(meetingMsgText)}" class="email-action-link" title="Open email client with message pre-filled">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                          <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        Draft Email
+                      </a>
+                    ` : ''}
                   </div>
                 ` : ''}
               </div>
@@ -1376,6 +1496,7 @@ Best regards,`;
           id: 'rec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
           stakeholderName: stakeholderNameInput.value.trim(),
           company: companyNameInput.value.trim(),
+          contactInfo: contactInfoInput.value.trim(),
           pitchDate: pitchVal,
           followupDays: followupDays,
           followupDate: calculatedFollowup,
@@ -1458,7 +1579,27 @@ Best regards,`;
           return;
         }
 
-        // 4. Tab switching between Follow-up and Meeting reminder messages
+        // 4. Copy Contact Info
+        const copyContactBtn = e.target.closest('.copy-contact-btn');
+        if (copyContactBtn) {
+          const rawText = decodeURIComponent(copyContactBtn.getAttribute('data-text'));
+          navigator.clipboard.writeText(rawText).then(() => {
+            const originalText = copyContactBtn.textContent;
+            copyContactBtn.textContent = 'Copied!';
+            copyContactBtn.style.color = '#15803d';
+            copyContactBtn.style.borderColor = '#86efac';
+            setTimeout(() => {
+              copyContactBtn.textContent = originalText;
+              copyContactBtn.style.color = '';
+              copyContactBtn.style.borderColor = '';
+            }, 1800);
+          }).catch(err => {
+            console.error('Failed to copy contact info:', err);
+          });
+          return;
+        }
+
+        // 5. Tab switching between Follow-up and Meeting reminder messages
         const tabBtn = e.target.closest('.message-tab-btn');
         if (tabBtn) {
           const tabKey = tabBtn.getAttribute('data-tab'); // e.g. followup-rec_123 or meeting-rec_123
@@ -1539,6 +1680,7 @@ Best regards,`;
             id: 'rec_sample_1',
             stakeholderName: 'Sarah Jenkins',
             company: 'Apex Cloud Solutions',
+            contactInfo: 'sarah.jenkins@apexcloud.io',
             pitchDate: formatDateToISO(pitch1),
             followupDays: 3,
             followupDate: formatDateToISO(today), // Due Today
@@ -1553,6 +1695,7 @@ Best regards,`;
             id: 'rec_sample_2',
             stakeholderName: 'Marcus Vance',
             company: 'Horizon Logistics Corp',
+            contactInfo: 'm.vance@horizonlogistics.com',
             pitchDate: formatDateToISO(pitch2),
             followupDays: 3,
             followupDate: formatDateToISO(new Date(today.getTime() - 5 * 86400000)), // Overdue
@@ -1567,6 +1710,7 @@ Best regards,`;
             id: 'rec_sample_3',
             stakeholderName: 'Elena Rostova',
             company: 'NextGen Health Partners',
+            contactInfo: 'elena@nextgenhealth.org',
             pitchDate: formatDateToISO(pitch3),
             followupDays: 5,
             followupDate: formatDateToISO(new Date(today.getTime() + 5 * 86400000)), // Upcoming
