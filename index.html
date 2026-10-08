@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FollowUp Flow - Pitch & Meeting Outreach Tracker</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-400: #94a3b8;
+      --slate-500: #64748b;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+
+      /* Status Colors */
+      --status-overdue-bg: #fee2e2;
+      --status-overdue-text: #b91c1c;
+      --status-overdue-border: #fca5a5;
+
+      --status-today-bg: #fef3c7;
+      --status-today-text: #b45309;
+      --status-today-border: #fcd34d;
+
+      --status-upcoming-bg: #dbeafe;
+      --status-upcoming-text: #1d4ed8;
+      --status-upcoming-border: #93c5fd;
+
+      --status-completed-bg: #f1f5f9;
+      --status-completed-text: #475569;
+      --status-completed-border: #cbd5e1;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f8fafc;
+      color: var(--slate-800);
+      line-height: 1.5;
+      padding: 16px;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 20px;
+      border: 1px solid var(--slate-200);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--primary);
+      color: white;
+      border-radius: var(--radius-md);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--slate-900);
+      letter-spacing: -0.02em;
+    }
+
+    .app-tagline {
+      font-size: 1rem;
+      color: var(--slate-600);
+      margin-bottom: 14px;
+    }
+
+    /* Note Banner */
+    .system-notice {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-left: 4px solid var(--primary);
+      color: #1e40af;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      font-size: 0.88rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .system-notice svg {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* Metrics Bar */
+    .metrics-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .metric-card {
+      background: white;
+      border: 1px solid var(--slate-200);
+      padding: 14px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--slate-800);
+      line-height: 1.2;
+    }
+
+    .metric-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--slate-500);
+      margin-top: 4px;
+    }
+
+    .metric-card.overdue .metric-value { color: var(--status-overdue-text); }
+    .metric-card.today .metric-value { color: var(--status-today-text); }
+    .metric-card.upcoming .metric-value { color: var(--status-upcoming-text); }
+
+    /* Layout Grid */
+    .layout-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    @media (min-width: 880px) {
+      .layout-grid {
+        grid-template-columns: 380px 1fr;
+        align-items: start;
+      }
+    }
+
+    /* Card Panels */
+    .panel {
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .panel-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--slate-900);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--slate-700);
+      margin-bottom: 6px;
+    }
+
+    .req {
+      color: #ef4444;
+      margin-left: 2px;
+    }
+
+    .helper-text {
+      font-size: 0.76rem;
+      color: var(--slate-500);
+      margin-top: 4px;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--slate-300);
+      border-radius: var(--radius-sm);
+      font-size: 0.92rem;
+      font-family: inherit;
+      color: var(--slate-800);
+      background-color: white;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .input-error {
+      border-color: #ef4444 !important;
+      background-color: #fff5f5;
+    }
+
+    .error-feedback {
+      display: none;
+      color: #b91c1c;
+      font-size: 0.76rem;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    .calc-preview {
+      background: var(--slate-50);
+      border: 1px dashed var(--slate-300);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      font-size: 0.82rem;
+      color: var(--slate-600);
+      margin-bottom: 16px;
+    }
+
+    .calc-preview strong {
+      color: var(--slate-800);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+      width: 100%;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background-color: white;
+      border-color: var(--slate-300);
+      color: var(--slate-700);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--slate-50);
+      border-color: var(--slate-400);
+    }
+
+    .btn-sm {
+      padding: 6px 10px;
+      font-size: 0.8rem;
+    }
+
+    .btn-danger-outline {
+      background: transparent;
+      color: #dc2626;
+      border-color: #fecaca;
+    }
+
+    .btn-danger-outline:hover {
+      background: #fee2e2;
+      border-color: #f87171;
+    }
+
+    .btn-copy {
+      background: var(--primary-light);
+      color: var(--primary);
+      border-color: #bfdbfe;
+    }
+
+    .btn-copy:hover {
+      background: #dbeafe;
+    }
+
+    .btn-copied {
+      background: #dcfce7 !important;
+      color: #15803d !important;
+      border-color: #86efac !important;
+    }
+
+    /* List Controls: Search & Filter */
+    .list-header {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    @media (min-width: 600px) {
+      .list-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+    }
+
+    .filter-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .filter-pill {
+      font-size: 0.8rem;
+      padding: 5px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--slate-200);
+      background: white;
+      color: var(--slate-600);
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .filter-pill.active {
+      background: var(--slate-800);
+      color: white;
+      border-color: var(--slate-800);
+    }
+
+    .search-input {
+      max-width: 200px;
+      padding: 6px 10px;
+      font-size: 0.85rem;
+    }
+
+    /* Outreach Card Item */
+    .outreach-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .outreach-card {
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-md);
+      background: white;
+      padding: 16px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      position: relative;
+    }
+
+    .outreach-card:hover {
+      border-color: var(--slate-300);
+      box-shadow: var(--shadow);
+    }
+
+    .outreach-card.is-completed {
+      background: #f8fafc;
+      opacity: 0.88;
+      border-color: var(--slate-200);
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .stakeholder-info {
+      flex: 1;
+    }
+
+    .stakeholder-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--slate-900);
+    }
+
+    .stakeholder-name.strike {
+      text-decoration: line-through;
+      color: var(--slate-500);
+    }
+
+    .stakeholder-company {
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--slate-600);
+      display: inline-block;
+      margin-top: 1px;
+    }
+
+    .badges-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    /* Status Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .badge-overdue {
+      background-color: var(--status-overdue-bg);
+      color: var(--status-overdue-text);
+      border-color: var(--status-overdue-border);
+    }
+
+    .badge-today {
+      background-color: var(--status-today-bg);
+      color: var(--status-today-text);
+      border-color: var(--status-today-border);
+    }
+
+    .badge-upcoming {
+      background-color: var(--status-upcoming-bg);
+      color: var(--status-upcoming-text);
+      border-color: var(--status-upcoming-border);
+    }
+
+    .badge-completed {
+      background-color: var(--status-completed-bg);
+      color: var(--status-completed-text);
+      border-color: var(--status-completed-border);
+    }
+
+    /* Card Details Grid */
+    .card-timeline {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      padding: 10px 12px;
+      background: var(--slate-50);
+      border-radius: var(--radius-sm);
+      margin-bottom: 12px;
+      font-size: 0.84rem;
+    }
+
+    @media (min-width: 520px) {
+      .card-timeline {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .timeline-col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .timeline-label {
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--slate-500);
+      text-transform: uppercase;
+    }
+
+    .timeline-date {
+      font-weight: 600;
+      color: var(--slate-800);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .note-text {
+      font-size: 0.82rem;
+      color: var(--slate-600);
+      margin-bottom: 12px;
+      background: white;
+      border-left: 3px solid var(--slate-300);
+      padding: 6px 10px;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    }
+
+    /* Message Copy Box */
+    .message-section {
+      margin-top: 12px;
+      border-top: 1px solid var(--slate-200);
+      padding-top: 12px;
+    }
+
+    .message-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .message-tab-btn {
+      font-size: 0.76rem;
+      font-weight: 600;
+      background: var(--slate-100);
+      border: 1px solid var(--slate-200);
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      color: var(--slate-600);
+    }
+
+    .message-tab-btn.active {
+      background: var(--primary-light);
+      border-color: #bfdbfe;
+      color: var(--primary);
+    }
+
+    .message-box {
+      background: #fafafa;
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-size: 0.84rem;
+      color: var(--slate-700);
+      white-space: pre-line;
+      position: relative;
+      margin-bottom: 8px;
+      line-height: 1.45;
+    }
+
+    /* Card Bottom Actions */
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--slate-100);
+    }
+
+    .footer-left {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .footer-right {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      background: white;
+      border: 2px dashed var(--slate-200);
+      border-radius: var(--radius-lg);
+      color: var(--slate-500);
+    }
+
+    .empty-state svg {
+      margin-bottom: 12px;
+      color: var(--slate-400);
+    }
+
+    .empty-state h3 {
+      font-size: 1.05rem;
+      color: var(--slate-700);
+      margin-bottom: 6px;
+    }
+
+    .empty-state p {
+      font-size: 0.88rem;
+      max-width: 380px;
+      margin: 0 auto 16px auto;
+    }
+
+    /* Form Feedback Alert */
+    .form-alert {
+      display: none;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 14px;
+      font-size: 0.84rem;
+      font-weight: 500;
+    }
+
+    .form-alert.error {
+      background-color: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .form-alert.success {
+      background-color: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      margin-top: 36px;
+      color: var(--slate-500);
+      font-size: 0.8rem;
+      padding-bottom: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="header-top">
+        <div class="brand-title">
+          <div class="brand-icon">F</div>
+          <div>
+            <h1>FollowUp Flow</h1>
+          </div>
+        </div>
+        <button id="btnLoadSample" class="btn btn-secondary btn-sm" title="Add sample data to see how it works">
+          + Load Sample Pitch
+        </button>
+      </div>
+
+      <p class="app-tagline">
+        Organize your sales outreach, stay on schedule with follow-up dates, and prepare reminder messages for upcoming stakeholder meetings.
+      </p>
+
+      <!-- Transparency / Disclaimer Note -->
+      <div class="system-notice">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <div>
+          <strong>Manual Sending Notice:</strong> This version organizes your outreach schedule and prepares customized messages for you to copy. It does not send emails or messages automatically, giving you full control over when and where you communicate.
+        </div>
+      </div>
+    </header>
+
+    <!-- Metrics Bar -->
+    <section class="metrics-bar">
+      <div class="metric-card overdue">
+        <div id="metricOverdue" class="metric-value">0</div>
+        <div class="metric-label">Overdue</div>
+      </div>
+      <div class="metric-card today">
+        <div id="metricToday" class="metric-value">0</div>
+        <div class="metric-label">Due Today</div>
+      </div>
+      <div class="metric-card upcoming">
+        <div id="metricUpcoming" class="metric-value">0</div>
+        <div class="metric-label">Upcoming</div>
+      </div>
+      <div class="metric-card">
+        <div id="metricCompleted" class="metric-value">0</div>
+        <div class="metric-label">Completed</div>
+      </div>
+    </section>
+
+    <!-- Main Layout -->
+    <main class="layout-grid">
+      
+      <!-- Left Column: Entry Form -->
+      <section class="panel">
+        <h2 class="panel-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Record New Outreach
+        </h2>
+
+        <div id="formAlert" class="form-alert"></div>
+
+        <form id="outreachForm" novalidate>
+          <!-- Stakeholder Name -->
+          <div class="form-group">
+            <label for="stakeholderName">Stakeholder Name <span class="req">*</span></label>
+            <input type="text" id="stakeholderName" placeholder="e.g. Jane Miller" required>
+            <div id="errorName" class="error-feedback">Please enter the stakeholder's name.</div>
+          </div>
+
+          <!-- Company -->
+          <div class="form-group">
+            <label for="companyName">Company / Organization <span class="req">*</span></label>
+            <input type="text" id="companyName" placeholder="e.g. BluePeak Logistics" required>
+            <div id="errorCompany" class="error-feedback">Please enter the company or organization.</div>
+          </div>
+
+          <!-- Pitch Date -->
+          <div class="form-group">
+            <label for="pitchDate">Pitch Date <span class="req">*</span></label>
+            <input type="date" id="pitchDate" required>
+            <div id="errorPitchDate" class="error-feedback">Please pick the date of your pitch.</div>
+          </div>
+
+          <!-- Follow-up Timing -->
+          <div class="form-group">
+            <label for="followupOffset">Follow-Up Schedule <span class="req">*</span></label>
+            <select id="followupOffset">
+              <option value="2">2 Days after pitch</option>
+              <option value="3" selected>3 Days after pitch (Recommended)</option>
+              <option value="5">5 Days after pitch</option>
+              <option value="7">7 Days (1 week) after pitch</option>
+              <option value="10">10 Days after pitch</option>
+              <option value="14">14 Days (2 weeks) after pitch</option>
+              <option value="custom">Custom number of days...</option>
+            </select>
+            <div id="customDaysWrapper" style="display: none; margin-top: 8px;">
+              <input type="number" id="customDaysInput" min="1" max="90" placeholder="Number of days (e.g. 4)">
+            </div>
+            <p class="helper-text">Standard practice is to follow up within 3 to 5 business days.</p>
+          </div>
+
+          <!-- Live Calculation Preview -->
+          <div id="calcPreview" class="calc-preview">
+            Follow-Up Date: <strong id="previewFollowupDate">—</strong>
+          </div>
+
+          <!-- Optional Meeting Date -->
+          <div class="form-group">
+            <label for="meetingDate">Upcoming Meeting Date <span style="font-weight: 400; color: var(--slate-500);">(Optional)</span></label>
+            <input type="date" id="meetingDate">
+            <p class="helper-text">If you already scheduled a follow-up demo or meeting.</p>
+          </div>
+
+          <!-- Meeting Reminder Timing -->
+          <div id="meetingReminderGroup" class="form-group" style="display: none;">
+            <label for="meetingReminderOffset">Meeting Reminder Alert</label>
+            <select id="meetingReminderOffset">
+              <option value="1" selected>1 Day before meeting (Recommended)</option>
+              <option value="2">2 Days before meeting</option>
+              <option value="0">Day of the meeting</option>
+            </select>
+            <div id="calcMeetingPreview" class="calc-preview" style="margin-top: 8px;">
+              Meeting Reminder Date: <strong id="previewMeetingReminderDate">—</strong>
+            </div>
+          </div>
+
+          <!-- Optional Notes / Context -->
+          <div class="form-group">
+            <label for="notes">Offer Details / Notes <span style="font-weight: 400; color: var(--slate-500);">(Optional)</span></label>
+            <textarea id="notes" rows="2" placeholder="e.g. Discussed our Starter tier. She was interested in team onboarding."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">
+            Save Outreach Entry
+          </button>
+        </form>
+      </section>
+
+      <!-- Right Column: Outreach Pipeline & Tracking -->
+      <section class="panel">
+        <div class="list-header">
+          <div class="filter-pills">
+            <button class="filter-pill active" data-filter="all">All (<span id="countAll">0</span>)</button>
+            <button class="filter-pill" data-filter="action">Action Needed (<span id="countAction">0</span>)</button>
+            <button class="filter-pill" data-filter="upcoming">Upcoming (<span id="countUpcoming">0</span>)</button>
+            <button class="filter-pill" data-filter="completed">Completed (<span id="countCompleted">0</span>)</button>
+          </div>
+          <input type="text" id="searchInput" class="search-input" placeholder="Search name or company...">
+        </div>
+
+        <!-- Dynamic List Container -->
+        <div id="outreachList" class="outreach-list"></div>
+
+        <!-- Empty State Container -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <h3>No outreach entries found</h3>
+          <p id="emptyStateDesc">Log your first pitch using the form on the left to automatically calculate reminders and follow-up templates.</p>
+          <button id="btnEmptySample" class="btn btn-secondary btn-sm">Load Demo Entry</button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      FollowUp Flow • Built for independent entrepreneurs & small business owners. Data is saved in your browser.
+    </footer>
+  </div>
+
+  <!-- JavaScript Application Logic -->
+  <script>
+    (function () {
+      'use strict';
+
+      const STORAGE_KEY = 'followup_flow_records_v1';
+
+      // State
+      let records = [];
+      let currentFilter = 'all';
+      let searchQuery = '';
+
+      // Elements
+      const form = document.getElementById('outreachForm');
+      const formAlert = document.getElementById('formAlert');
+      const stakeholderNameInput = document.getElementById('stakeholderName');
+      const companyNameInput = document.getElementById('companyName');
+      const pitchDateInput = document.getElementById('pitchDate');
+      const followupOffsetSelect = document.getElementById('followupOffset');
+      const customDaysWrapper = document.getElementById('customDaysWrapper');
+      const customDaysInput = document.getElementById('customDaysInput');
+      const meetingDateInput = document.getElementById('meetingDate');
+      const meetingReminderGroup = document.getElementById('meetingReminderGroup');
+      const meetingReminderOffsetSelect = document.getElementById('meetingReminderOffset');
+      const notesInput = document.getElementById('notes');
+
+      const previewFollowupDate = document.getElementById('previewFollowupDate');
+      const previewMeetingReminderDate = document.getElementById('previewMeetingReminderDate');
+      const outreachList = document.getElementById('outreachList');
+      const emptyState = document.getElementById('emptyState');
+      const emptyStateDesc = document.getElementById('emptyStateDesc');
+      const searchInput = document.getElementById('searchInput');
+
+      const metricOverdue = document.getElementById('metricOverdue');
+      const metricToday = document.getElementById('metricToday');
+      const metricUpcoming = document.getElementById('metricUpcoming');
+      const metricCompleted = document.getElementById('metricCompleted');
+
+      const countAll = document.getElementById('countAll');
+      const countAction = document.getElementById('countAction');
+      const countUpcoming = document.getElementById('countUpcoming');
+      const countCompleted = document.getElementById('countCompleted');
+
+      const btnLoadSample = document.getElementById('btnLoadSample');
+      const btnEmptySample = document.getElementById('btnEmptySample');
+
+      // Error message feedback elements
+      const errorName = document.getElementById('errorName');
+      const errorCompany = document.getElementById('errorCompany');
+      const errorPitchDate = document.getElementById('errorPitchDate');
+
+      // --- DATE UTILITIES ---
+
+      // Format YYYY-MM-DD from Date object using local time
+      function formatDateToISO(d) {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+
+      function getTodayISO() {
+        return formatDateToISO(new Date());
+      }
+
+      // Parse YYYY-MM-DD as local date to prevent timezone rollbacks
+      function parseLocalDate(isoStr) {
+        if (!isoStr) return null;
+        const [y, m, d] = isoStr.split('-').map(Number);
+        return new Date(y, m - 1, d);
+      }
+
+      function addDays(isoStr, numDays) {
+        if (!isoStr) return '';
+        const d = parseLocalDate(isoStr);
+        d.setDate(d.getDate() + Number(numDays));
+        return formatDateToISO(d);
+      }
+
+      function subtractDays(isoStr, numDays) {
+        if (!isoStr) return '';
+        const d = parseLocalDate(isoStr);
+        d.setDate(d.getDate() - Number(numDays));
+        return formatDateToISO(d);
+      }
+
+      function formatReadableDate(isoStr) {
+        if (!isoStr) return 'N/A';
+        const d = parseLocalDate(isoStr);
+        return d.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+      }
+
+      // Compute status for an ISO date vs today
+      // Returns 'overdue' | 'today' | 'upcoming' | null
+      function getDateStatus(targetISO, todayISO) {
+        if (!targetISO) return null;
+        if (targetISO < todayISO) return 'overdue';
+        if (targetISO === todayISO) return 'today';
+        return 'upcoming';
+      }
+
+      // Get overall status for record
+      function getRecordStatus(record, todayISO) {
+        if (record.completed) {
+          return { key: 'completed', label: 'Completed', class: 'badge-completed' };
+        }
+
+        const followupStatus = getDateStatus(record.followupDate, todayISO);
+        let meetingRemStatus = null;
+        if (record.meetingReminderDate) {
+          meetingRemStatus = getDateStatus(record.meetingReminderDate, todayISO);
+        }
+
+        // If either action is overdue
+        if (followupStatus === 'overdue' || meetingRemStatus === 'overdue') {
+          return { key: 'overdue', label: 'Overdue', class: 'badge-overdue' };
+        }
+        // If either action is due today
+        if (followupStatus === 'today' || meetingRemStatus === 'today') {
+          return { key: 'today', label: 'Due Today', class: 'badge-today' };
+        }
+        // Otherwise upcoming
+        return { key: 'upcoming', label: 'Upcoming', class: 'badge-upcoming' };
+      }
+
+      // --- STORAGE MANAGEMENT ---
+
+      function loadRecords() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            records = JSON.parse(raw);
+          } else {
+            records = [];
+          }
+        } catch (e) {
+          console.warn('Could not read records from localStorage:', e);
+          records = [];
+        }
+      }
+
+      function saveRecords() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        } catch (e) {
+          console.error('Failed to save to localStorage:', e);
+        }
+      }
+
+      // --- FORM & PREVIEW LOGIC ---
+
+      function getSelectedFollowupDays() {
+        if (followupOffsetSelect.value === 'custom') {
+          const val = parseInt(customDaysInput.value, 10);
+          return isNaN(val) || val < 1 ? 3 : val;
+        }
+        return parseInt(followupOffsetSelect.value, 10);
+      }
+
+      function updateFormCalculations() {
+        const pitchVal = pitchDateInput.value;
+        const days = getSelectedFollowupDays();
+
+        if (pitchVal) {
+          const calculatedFollowup = addDays(pitchVal, days);
+          previewFollowupDate.textContent = `${formatReadableDate(calculatedFollowup)} (${days} day${days > 1 ? 's' : ''} after pitch)`;
+        } else {
+          previewFollowupDate.textContent = '—';
+        }
+
+        const meetingVal = meetingDateInput.value;
+        if (meetingVal) {
+          meetingReminderGroup.style.display = 'block';
+          const reminderDaysBefore = parseInt(meetingReminderOffsetSelect.value, 10);
+          const calculatedReminder = subtractDays(meetingVal, reminderDaysBefore);
+          
+          let explanation = 'On day of meeting';
+          if (reminderDaysBefore === 1) explanation = '1 day before meeting';
+          if (reminderDaysBefore > 1) explanation = `${reminderDaysBefore} days before meeting`;
+
+          previewMeetingReminderDate.textContent = `${formatReadableDate(calculatedReminder)} (${explanation})`;
+        } else {
+          meetingReminderGroup.style.display = 'none';
+          previewMeetingReminderDate.textContent = '—';
+        }
+      }
+
+      // Show friendly form alert
+      function showFormAlert(message, type) {
+        formAlert.textContent = message;
+        formAlert.className = `form-alert ${type}`;
+        formAlert.style.display = 'block';
+
+        if (type === 'success') {
+          setTimeout(() => {
+            formAlert.style.display = 'none';
+          }, 3500);
+        }
+      }
+
+      function hideFormAlert() {
+        formAlert.style.display = 'none';
+      }
+
+      // --- MESSAGE GENERATION ---
+
+      function createFollowupMessage(record) {
+        const notesContext = record.notes ? ` Regarding what we spoke about (${record.notes}), ` : ' ';
+        return `Hi ${record.stakeholderName},
+
+I hope you're having a productive week! Following up on our pitch regarding ${record.company} from ${formatReadableDate(record.pitchDate)}.${notesContext}I wanted to check in and see if you had any questions or if you'd like to explore next steps.
+
+Looking forward to hearing your thoughts!
+
+Best regards,`;
+      }
+
+      function createMeetingReminderMessage(record) {
+        return `Hi ${record.stakeholderName},
+
+Just a quick reminder about our upcoming meeting scheduled for ${formatReadableDate(record.meetingDate)}. 
+
+Looking forward to connecting with you and continuing our conversation for ${record.company}!
+
+Best regards,`;
+      }
+
+      // --- RENDERING & UI UPDATES ---
+
+      function render() {
+        const todayISO = getTodayISO();
+
+        // Calculate metrics
+        let overdueCount = 0;
+        let todayCount = 0;
+        let upcomingCount = 0;
+        let completedCount = 0;
+
+        records.forEach(item => {
+          const status = getRecordStatus(item, todayISO);
+          if (status.key === 'overdue') overdueCount++;
+          else if (status.key === 'today') todayCount++;
+          else if (status.key === 'upcoming') upcomingCount++;
+          else if (status.key === 'completed') completedCount++;
+        });
+
+        metricOverdue.textContent = overdueCount;
+        metricToday.textContent = todayCount;
+        metricUpcoming.textContent = upcomingCount;
+        metricCompleted.textContent = completedCount;
+
+        countAll.textContent = records.length;
+        countAction.textContent = overdueCount + todayCount;
+        countUpcoming.textContent = upcomingCount;
+        countCompleted.textContent = completedCount;
+
+        // Filtering
+        let filtered = records.filter(item => {
+          const status = getRecordStatus(item, todayISO);
+
+          if (currentFilter === 'action' && (status.key !== 'overdue' && status.key !== 'today')) {
+            return false;
+          }
+          if (currentFilter === 'upcoming' && status.key !== 'upcoming') {
+            return false;
+          }
+          if (currentFilter === 'completed' && status.key !== 'completed') {
+            return false;
+          }
+
+          // Search query matching
+          if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase().trim();
+            const nameMatch = item.stakeholderName.toLowerCase().includes(q);
+            const companyMatch = item.company.toLowerCase().includes(q);
+            const notesMatch = (item.notes || '').toLowerCase().includes(q);
+            return nameMatch || companyMatch || notesMatch;
+          }
+
+          return true;
+        });
+
+        // Sort: Overdue first, then Due Today, then Upcoming by date, then Completed last
+        filtered.sort((a, b) => {
+          if (a.completed && !b.completed) return 1;
+          if (!a.completed && b.completed) return -1;
+          return (a.followupDate || '').localeCompare(b.followupDate || '');
+        });
+
+        // Render List
+        outreachList.innerHTML = '';
+
+        if (filtered.length === 0) {
+          emptyState.style.display = 'block';
+          if (searchQuery) {
+            emptyStateDesc.textContent = `No outreach entries matching "${searchQuery}".`;
+          } else if (currentFilter !== 'all') {
+            emptyStateDesc.textContent = `No entries currently in the "${currentFilter}" filter.`;
+          } else {
+            emptyStateDesc.textContent = 'Log your first pitch using the form on the left to automatically calculate reminders and follow-up templates.';
+          }
+        } else {
+          emptyState.style.display = 'none';
+
+          filtered.forEach(record => {
+            const status = getRecordStatus(record, todayISO);
+            const followupStatus = getDateStatus(record.followupDate, todayISO);
+            let meetingStatus = record.meetingReminderDate ? getDateStatus(record.meetingReminderDate, todayISO) : null;
+
+            const card = document.createElement('article');
+            card.className = `outreach-card ${record.completed ? 'is-completed' : ''}`;
+            card.setAttribute('data-id', record.id);
+
+            const followupBadge = record.completed
+              ? ''
+              : followupStatus === 'overdue'
+              ? '<span class="status-badge badge-overdue">Follow-Up Overdue</span>'
+              : followupStatus === 'today'
+              ? '<span class="status-badge badge-today">Follow-Up Due Today</span>'
+              : '<span class="status-badge badge-upcoming">Upcoming Follow-Up</span>';
+
+            const meetingBadge = (record.meetingReminderDate && !record.completed)
+              ? meetingStatus === 'overdue'
+                ? '<span class="status-badge badge-overdue">Meeting Reminder Overdue</span>'
+                : meetingStatus === 'today'
+                ? '<span class="status-badge badge-today">Meeting Reminder Due Today</span>'
+                : '<span class="status-badge badge-upcoming">Meeting Reminder Upcoming</span>'
+              : '';
+
+            const followupMsgText = createFollowupMessage(record);
+            const meetingMsgText = record.meetingDate ? createMeetingReminderMessage(record) : null;
+
+            card.innerHTML = `
+              <div class="card-top">
+                <div class="stakeholder-info">
+                  <div class="stakeholder-name ${record.completed ? 'strike' : ''}">
+                    ${escapeHTML(record.stakeholderName)}
+                  </div>
+                  <div class="stakeholder-company">
+                    ${escapeHTML(record.company)}
+                  </div>
+                </div>
+                <div class="badges-group">
+                  <span class="status-badge ${status.class}">${status.label}</span>
+                  ${followupBadge}
+                  ${meetingBadge}
+                </div>
+              </div>
+
+              <!-- Timeline Schedule -->
+              <div class="card-timeline">
+                <div class="timeline-col">
+                  <span class="timeline-label">Pitched On</span>
+                  <span class="timeline-date">${formatReadableDate(record.pitchDate)}</span>
+                </div>
+                <div class="timeline-col">
+                  <span class="timeline-label">Follow-Up Target</span>
+                  <span class="timeline-date" style="${followupStatus === 'overdue' && !record.completed ? 'color: var(--status-overdue-text); font-weight:700;' : ''}">
+                    ${formatReadableDate(record.followupDate)}
+                    <span style="font-size:0.75rem; font-weight:normal; color:var(--slate-500);">(${record.followupDays}d after)</span>
+                  </span>
+                </div>
+                ${record.meetingDate ? `
+                  <div class="timeline-col" style="grid-column: 1 / -1; margin-top: 4px; padding-top: 4px; border-top: 1px dashed var(--slate-200);">
+                    <span class="timeline-label">Meeting Scheduled</span>
+                    <span class="timeline-date">
+                      ${formatReadableDate(record.meetingDate)}
+                      <span style="font-size:0.75rem; color:var(--slate-500); font-weight:normal;">• Reminder alert: ${formatReadableDate(record.meetingReminderDate)}</span>
+                    </span>
+                  </div>
+                ` : ''}
+              </div>
+
+              ${record.notes ? `
+                <div class="note-text">
+                  <strong>Notes:</strong> ${escapeHTML(record.notes)}
+                </div>
+              ` : ''}
+
+              <!-- Prepared Ready-to-Copy Messages -->
+              <div class="message-section">
+                <div class="message-tabs">
+                  <button type="button" class="message-tab-btn active" data-tab="followup-${record.id}">
+                    Follow-Up Message
+                  </button>
+                  ${record.meetingDate ? `
+                    <button type="button" class="message-tab-btn" data-tab="meeting-${record.id}">
+                      Meeting Reminder Message
+                    </button>
+                  ` : ''}
+                </div>
+
+                <!-- Follow-up message view -->
+                <div id="msgBox-followup-${record.id}">
+                  <div class="message-box">${escapeHTML(followupMsgText)}</div>
+                  <button type="button" class="btn btn-copy btn-sm copy-btn" data-text="${encodeURIComponent(followupMsgText)}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Copy Follow-Up Message
+                  </button>
+                </div>
+
+                <!-- Meeting reminder view (if exists) -->
+                ${record.meetingDate ? `
+                  <div id="msgBox-meeting-${record.id}" style="display:none;">
+                    <div class="message-box">${escapeHTML(meetingMsgText)}</div>
+                    <button type="button" class="btn btn-copy btn-sm copy-btn" data-text="${encodeURIComponent(meetingMsgText)}">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                      </svg>
+                      Copy Meeting Reminder
+                    </button>
+                  </div>
+                ` : ''}
+              </div>
+
+              <!-- Card Action Controls -->
+              <div class="card-footer">
+                <div class="footer-left">
+                  <button type="button" class="btn btn-secondary btn-sm toggle-complete-btn" data-id="${record.id}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      ${record.completed ? '<polyline points="20 6 9 17 4 12"></polyline>' : '<circle cx="12" cy="12" r="10"></circle>'}
+                    </svg>
+                    ${record.completed ? 'Mark Incomplete' : 'Mark Completed'}
+                  </button>
+                </div>
+                <div class="footer-right">
+                  <button type="button" class="btn btn-danger-outline btn-sm delete-btn" data-id="${record.id}" title="Delete outreach record">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    Delete
+                  </button>
+                </div>
+              </div>
+            `;
+
+            outreachList.appendChild(card);
+          });
+        }
+      }
+
+      function escapeHTML(str) {
+        if (!str) return '';
+        return str
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      // --- VALIDATION & SUBMISSION ---
+
+      function validateForm() {
+        let isValid = true;
+        hideFormAlert();
+
+        // Clear existing errors
+        [stakeholderNameInput, companyNameInput, pitchDateInput].forEach(el => el.classList.remove('input-error'));
+        errorName.style.display = 'none';
+        errorCompany.style.display = 'none';
+        errorPitchDate.style.display = 'none';
+
+        if (!stakeholderNameInput.value.trim()) {
+          stakeholderNameInput.classList.add('input-error');
+          errorName.style.display = 'block';
+          isValid = false;
+        }
+
+        if (!companyNameInput.value.trim()) {
+          companyNameInput.classList.add('input-error');
+          errorCompany.style.display = 'block';
+          isValid = false;
+        }
+
+        if (!pitchDateInput.value) {
+          pitchDateInput.classList.add('input-error');
+          errorPitchDate.style.display = 'block';
+          isValid = false;
+        }
+
+        // Check meeting date coherence if provided
+        if (meetingDateInput.value && pitchDateInput.value) {
+          if (meetingDateInput.value < pitchDateInput.value) {
+            showFormAlert('Friendly check: The scheduled meeting date is set earlier than your pitch date. Please double check the dates.', 'error');
+            isValid = false;
+          }
+        }
+
+        if (!isValid && !formAlert.style.display.includes('block')) {
+          showFormAlert('Please fill in the required fields highlighted in red.', 'error');
+        }
+
+        return isValid;
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        if (!validateForm()) return;
+
+        const pitchVal = pitchDateInput.value;
+        const followupDays = getSelectedFollowupDays();
+        const calculatedFollowup = addDays(pitchVal, followupDays);
+
+        const meetingVal = meetingDateInput.value || null;
+        let meetingReminderDate = null;
+        let meetingReminderOffset = null;
+
+        if (meetingVal) {
+          meetingReminderOffset = parseInt(meetingReminderOffsetSelect.value, 10);
+          meetingReminderDate = subtractDays(meetingVal, meetingReminderOffset);
+        }
+
+        const newRecord = {
+          id: 'rec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+          stakeholderName: stakeholderNameInput.value.trim(),
+          company: companyNameInput.value.trim(),
+          pitchDate: pitchVal,
+          followupDays: followupDays,
+          followupDate: calculatedFollowup,
+          meetingDate: meetingVal,
+          meetingReminderOffset: meetingReminderOffset,
+          meetingReminderDate: meetingReminderDate,
+          notes: notesInput.value.trim(),
+          completed: false,
+          createdAt: new Date().toISOString()
+        };
+
+        records.unshift(newRecord);
+        saveRecords();
+        render();
+
+        // Reset inputs to clean state
+        form.reset();
+        pitchDateInput.value = getTodayISO();
+        followupOffsetSelect.value = '3';
+        customDaysWrapper.style.display = 'none';
+        updateFormCalculations();
+
+        showFormAlert('Success! Your outreach has been scheduled and reminders calculated.', 'success');
+      });
+
+      // --- EVENT DELEGATION FOR LIST ACTIONS ---
+
+      outreachList.addEventListener('click', function (e) {
+        // 1. Toggle Complete
+        const toggleBtn = e.target.closest('.toggle-complete-btn');
+        if (toggleBtn) {
+          const id = toggleBtn.getAttribute('data-id');
+          const target = records.find(r => r.id === id);
+          if (target) {
+            target.completed = !target.completed;
+            saveRecords();
+            render();
+          }
+          return;
+        }
+
+        // 2. Delete Record
+        const deleteBtn = e.target.closest('.delete-btn');
+        if (deleteBtn) {
+          const id = deleteBtn.getAttribute('data-id');
+          const item = records.find(r => r.id === id);
+          const confirmMsg = item 
+            ? `Are you sure you want to delete the outreach record for ${item.stakeholderName} at ${item.company}?`
+            : 'Are you sure you want to delete this outreach record?';
+          
+          if (window.confirm(confirmMsg)) {
+            records = records.filter(r => r.id !== id);
+            saveRecords();
+            render();
+          }
+          return;
+        }
+
+        // 3. Copy Message
+        const copyBtn = e.target.closest('.copy-btn');
+        if (copyBtn) {
+          const rawText = decodeURIComponent(copyBtn.getAttribute('data-text'));
+          navigator.clipboard.writeText(rawText).then(() => {
+            const originalHTML = copyBtn.innerHTML;
+            copyBtn.classList.add('btn-copied');
+            copyBtn.innerHTML = `
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Copied to clipboard!
+            `;
+            setTimeout(() => {
+              copyBtn.classList.remove('btn-copied');
+              copyBtn.innerHTML = originalHTML;
+            }, 2000);
+          }).catch(err => {
+            console.error('Copy failed:', err);
+            alert('Failed to copy to clipboard automatically. Please copy the text directly from the box.');
+          });
+          return;
+        }
+
+        // 4. Tab switching between Follow-up and Meeting reminder messages
+        const tabBtn = e.target.closest('.message-tab-btn');
+        if (tabBtn) {
+          const tabKey = tabBtn.getAttribute('data-tab'); // e.g. followup-rec_123 or meeting-rec_123
+          const card = tabBtn.closest('.outreach-card');
+          const recordId = card.getAttribute('data-id');
+
+          const allTabs = card.querySelectorAll('.message-tab-btn');
+          allTabs.forEach(t => t.classList.remove('active'));
+          tabBtn.classList.add('active');
+
+          const boxFollowup = card.querySelector(`#msgBox-followup-${recordId}`);
+          const boxMeeting = card.querySelector(`#msgBox-meeting-${recordId}`);
+
+          if (tabKey.startsWith('followup')) {
+            if (boxFollowup) boxFollowup.style.display = 'block';
+            if (boxMeeting) boxMeeting.style.display = 'none';
+          } else {
+            if (boxFollowup) boxFollowup.style.display = 'none';
+            if (boxMeeting) boxMeeting.style.display = 'block';
+          }
+          return;
+        }
+      });
+
+      // --- FILTERING & SEARCH EVENTS ---
+
+      document.querySelectorAll('.filter-pill').forEach(btn => {
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          currentFilter = this.getAttribute('data-filter');
+          render();
+        });
+      });
+
+      searchInput.addEventListener('input', function (e) {
+        searchQuery = e.target.value;
+        render();
+      });
+
+      // --- LIVE CALCULATION LISTENERS ---
+
+      pitchDateInput.addEventListener('input', updateFormCalculations);
+      customDaysInput.addEventListener('input', updateFormCalculations);
+      meetingDateInput.addEventListener('input', updateFormCalculations);
+      meetingReminderOffsetSelect.addEventListener('change', updateFormCalculations);
+
+      followupOffsetSelect.addEventListener('change', function () {
+        if (this.value === 'custom') {
+          customDaysWrapper.style.display = 'block';
+          if (!customDaysInput.value) customDaysInput.value = '4';
+        } else {
+          customDaysWrapper.style.display = 'none';
+        }
+        updateFormCalculations();
+      });
+
+      // --- DEMO / SAMPLE DATA ---
+
+      function loadSampleData() {
+        const today = new Date();
+
+        // 1. One Due Today
+        const pitch1 = new Date(today);
+        pitch1.setDate(pitch1.getDate() - 3);
+
+        // 2. One Overdue
+        const pitch2 = new Date(today);
+        pitch2.setDate(pitch2.getDate() - 8);
+
+        // 3. One Upcoming with a scheduled meeting
+        const pitch3 = new Date(today);
+        const meeting3 = new Date(today);
+        meeting3.setDate(meeting3.getDate() + 4);
+
+        const sampleRecords = [
+          {
+            id: 'rec_sample_1',
+            stakeholderName: 'Sarah Jenkins',
+            company: 'Apex Cloud Solutions',
+            pitchDate: formatDateToISO(pitch1),
+            followupDays: 3,
+            followupDate: formatDateToISO(today), // Due Today
+            meetingDate: null,
+            meetingReminderOffset: null,
+            meetingReminderDate: null,
+            notes: 'Presented our enterprise subscription. Loved the analytics dashboard.',
+            completed: false,
+            createdAt: new Date().toISOString()
+          },
+          {
+            id: 'rec_sample_2',
+            stakeholderName: 'Marcus Vance',
+            company: 'Horizon Logistics Corp',
+            pitchDate: formatDateToISO(pitch2),
+            followupDays: 3,
+            followupDate: formatDateToISO(new Date(today.getTime() - 5 * 86400000)), // Overdue
+            meetingDate: null,
+            meetingReminderOffset: null,
+            meetingReminderDate: null,
+            notes: 'Sent initial pricing deck via email. Follow up needed urgently.',
+            completed: false,
+            createdAt: new Date().toISOString()
+          },
+          {
+            id: 'rec_sample_3',
+            stakeholderName: 'Elena Rostova',
+            company: 'NextGen Health Partners',
+            pitchDate: formatDateToISO(pitch3),
+            followupDays: 5,
+            followupDate: formatDateToISO(new Date(today.getTime() + 5 * 86400000)), // Upcoming
+            meetingDate: formatDateToISO(meeting3),
+            meetingReminderOffset: 1,
+            meetingReminderDate: formatDateToISO(new Date(meeting3.getTime() - 86400000)),
+            notes: 'Demo pitch went great. Booked formal walkthrough for next week.',
+            completed: false,
+            createdAt: new Date().toISOString()
+          }
+        ];
+
+        records = sampleRecords;
+        saveRecords();
+        render();
+        showFormAlert('Sample outreach entries loaded! You can edit, copy messages, or delete them.', 'success');
+      }
+
+      btnLoadSample.addEventListener('click', loadSampleData);
+      btnEmptySample.addEventListener('click', loadSampleData);
+
+      // --- INITIALIZATION ---
+
+      // Set default pitch date to today
+      pitchDateInput.value = getTodayISO();
+      updateFormCalculations();
+
+      // Load records and render
+      loadRecords();
+      render();
+
+    })();
+  </script>
+</body>
+</html>
